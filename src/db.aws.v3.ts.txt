@@ -1,0 +1,85 @@
+import { AWSConfig } from './aws.config';
+import { DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import { DynamoDBClient, CreateTableCommand } from "@aws-sdk/client-dynamodb";
+
+
+class _DbCore {
+
+  private db = this.createClients();
+
+  private createClients() {
+    const marshallOptions = {
+      // Whether to automatically convert empty strings, blobs, and sets to `null`.
+      convertEmptyValues: false, // false, by default.
+      // Whether to remove undefined values while marshalling.
+      removeUndefinedValues: true, // false, by default.
+      // Whether to convert typeof object to map attribute.
+      convertClassInstanceToMap: false, // false, by default.
+    };
+
+    const unmarshallOptions = {
+      // Whether to return numbers as a string instead of converting them to native JavaScript numbers.
+      wrapNumbers: false, // false, by default.
+    };
+
+    const translateConfig = { marshallOptions, unmarshallOptions };
+
+    const ddbClient = new DynamoDBClient({
+      region: AWSConfig.getRegion(),
+      endpoint: AWSConfig.getDynamoDbEnpoint(),
+      credentials: {
+        accessKeyId: AWSConfig.getAccessKeyId(),
+        secretAccessKey: AWSConfig.getSecretAccessKey()
+      }
+    });
+    // Create the DynamoDB document client.
+    const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
+    return { ddbClient, ddbDocClient };
+  }
+
+  public async createTable(tableName: string, hashKey: string, rangeKey: string) {
+    var params = {
+      TableName: tableName,
+      KeySchema: [ // The type of of schema.  Must start with a HASH type, with an optional second RANGE.
+        { // Required HASH type attribute
+          AttributeName: hashKey,
+          KeyType: 'HASH',
+        },
+        {
+          AttributeName: rangeKey,
+          KeyType: 'RANGE'
+        }
+      ],
+      AttributeDefinitions: [ // The names and types of all primary and index key attributes only
+        { // Type attribute
+          AttributeName: hashKey,
+          AttributeType: 'S',
+        },
+        {
+          AttributeName: rangeKey,
+          AttributeType: 'S'
+        }
+        // ... more attributes ...
+      ],
+      ProvisionedThroughput: { // required provisioned throughput for the table
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+      StreamSpecification: {
+        StreamEnabled: false,
+      },
+    };
+
+    try {
+      const command = new CreateTableCommand(params);
+      const data = await this.db.ddbClient.send(command);
+      console.log('Success response', JSON.stringify(data, null, 2)); // successful response
+    } catch (err) {
+      console.log('Error response', JSON.stringify(err, null, 2)); // an error occurred
+    }
+  }
+
+}
+
+export const dbCore = new _DbCore();
