@@ -1,5 +1,9 @@
 # private--shul-admin-server
 
+TODO:
+- use the dynamo toolbox: this will help with mapping the key values
+- define tables and setup defs and models
+
 https://www.xolv.io/blog/dev-notes/creating-tables-with-dynamodb-toolbox/
 
 https://github.com/jeremydaly/dynamodb-toolbox
