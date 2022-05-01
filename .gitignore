@@ -1,8 +1,8 @@
-# Dependency directories
-node_modules/
-
-# Serverless directories
 .serverless/
 
-# DynamoDB Local files
+dynamodb_local_latest*
 .dynamodb/
+
+node_modules
+
+.DS_Store
