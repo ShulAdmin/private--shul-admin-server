@@ -19,15 +19,30 @@
   - ? limitCount
 
 ## user-org
+- id=userId__orgId
 - userId (email)
 - orgId
 - stripeCardInfo
-- balance
-  - dollar
-  - gift
-  - lastPayDescription
-  - lastDonateDescription
-- giftBalance
+- oweAggregate
+  - lifetime
+    - runningDollar
+    - runningGift
+  - y2022
+    - runningDollar
+    - runningGift
+  - m05
+    - runningDollar
+    - runningGift
+- payAggregate
+  - lifetime
+    - runningDollar
+    - runningGift
+  - y2022
+    - runningDollar
+    - runningGift
+  - m05
+    - runningDollar
+    - runningGift
 - recurringProducts
   - ???? maybe this isn't the right place for the recurring stuff
 - orgLevel ie. friend, member
@@ -37,17 +52,12 @@
 - userId
 - orgId
 - amount
-- type ie. payCC, payCheck, payCash, payService, payGift, oweDollar, oweGift
+- type ie. payCC, payCheck, payCash, payGift, oweDollar, oweGift
 - date
 - description
 - inputtedByUserId
 - inputtedDate
 
-
-# Firebase
-https://firebase.google.com/docs/database/admin/retrieve-data
-
-https://firebase.google.com/docs/emulator-suite
 
 
 
@@ -77,3 +87,7 @@ https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/dynamodb-examp
 
 
 
+# Firebase
+https://firebase.google.com/docs/database/admin/retrieve-data
+
+https://firebase.google.com/docs/emulator-suite
