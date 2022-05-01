@@ -4,6 +4,7 @@
   "description": "",
   "main": "",
   "scripts": {
+    "db": "pushd dynamodb_local_latest && java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -port 8888 && popd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
