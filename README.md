@@ -3,24 +3,36 @@
 # Tables
 
 ## org
+- id
+- info
+  - name
+  - address
+  - phone number
+  - email
+  - taxId
 - stripeApiInfo
-- donationCategories
+- donation-categories{}
   - id
-  - name ie. Eruv Fund, New Building Fund
+  - orgId
+  - name ie. Kiddush Fund, Eruv Fund, New Building Fund
   - amountBalance
     - dollar
     - gift
-- donationProducts
+
+- donation-products{}
   - id
-  - name
+  - orgId
+  - name ie. Basic Kiddush, Delux Kiddush, Basic Member, Gold Member
+  - donationCategoryId
   - price
-  - donationCategory
   - recurring ie. daily, monthly, yearly
   - ? limitCount
+  - ? soldCount
+
 
 ## user-org
-- id=userId__orgId
-- userId (email)
+- id ie. userId__orgId
+- userId ie. email
 - orgId
 - stripeCardInfo
 - oweAggregate
@@ -55,9 +67,10 @@
 - type ie. payCC, payCheck, payCash, payGift, oweDollar, oweGift
 - date
 - description
+- donationCategoryId
+- donationProductId
 - inputtedByUserId
 - inputtedDate
-
 
 
 
