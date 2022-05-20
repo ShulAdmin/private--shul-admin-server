@@ -1,3 +1,5 @@
+// https://calculator.aws/#/estimate?id=0cb72f7af96688b8a87bb1b556798d0cf809abcd
+
 import { AWSConfig } from './aws.config';
 import { DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";

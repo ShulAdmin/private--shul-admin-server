@@ -1,27 +1,31 @@
 {
   "compilerOptions": {
     "outDir":"distJs",
-    "target": "es6",
+    "target": "es2020",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "removeComments": false,
     "noEmitOnError": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "typeRoots" : ["node_modules/@types", "typings"],
-
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "typings"
+    ],
     "allowJs": true,
     "checkJs": true,
-    "strict": false, 
+    "strict": false,
     "noImplicitAny": false,
     "noImplicitThis": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-      "src/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
