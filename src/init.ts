@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { PromisePool } from '@supercharge/promise-pool';
 import { sub, getUnixTime } from 'date-fns'
 import short from 'short-uuid';
 const shortUUID = short(`0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%"'()*+-,:;<=>?@[]^_{|}~`, { consistentLength: false });
@@ -16,11 +17,70 @@ import { MockData } from './mock-data';
 
     // await simulate_AddOrgs();
 
-    log(`Drop Collection: balance-sheet`,
-      await Promise.allSettled([azdbCore.collection.balanceSheet.drop()])
-    );
-    await simulate_AddBalanceSheetForOrg(`rkRfnfBu1tqDnpPrcmm7fH`, `gmail.com`);
-    await simulate_AddBalanceSheetForOrg(`mvLbBRufusqLmsk3jLT1uh`, `hotmail.com`);
+    // log(`Drop Collection: balance-sheet`,
+    //   await Promise.allSettled([azdbCore.collection.balanceSheet.drop()])
+    // );
+    // await simulate_AddBalanceSheetForOrg(`rkRfnfBu1tqDnpPrcmm7fH`, `gmail.com`);
+    // await simulate_AddBalanceSheetForOrg(`mvLbBRufusqLmsk3jLT1uh`, `hotmail.com`);
+
+    // log(`Get a users balance: 8LucasMia@gmail.com`,
+    //   await azdbCore.collection.balanceSheet.aggregate([
+    //     {
+    //       $match: {
+    //         d: { $gt: getUnixTime(sub(new Date(), { days: 365 })) },
+    //         u: "8LucasMia@gmail.com",
+    //       }
+    //     },
+    //     { $group: { _id: { orgId: "$o", catId: "$c" }, balance: { $sum: "$a" } } } // Get user's Category balance per Org
+    //   ]).explain(),
+    //   true
+    // )
+    // return;
+
+
+    // log(`Get an Orgs income`,
+    //   await azdbCore.collection.balanceSheet.aggregate([
+    //     {
+    //       $match: {
+    //         d: { $gt: getUnixTime(sub(new Date(), { days: 365 })) },
+    //         a: { $gt: 0 },
+    //         o: "rkRfnfBu1tqDnpPrcmm7fH",
+    //       }
+    //     },
+    //     { $group: { _id: { catId: "$c" }, balance: { $sum: "$a" } } }
+    //     // { $group: { _id: {prodId: "$p"}, balance: { $sum: "$a" } } }
+    //   ]).explain(),
+    //   true
+    // )
+
+    log(`Raw Get all Org members balances`,
+      await azdbCore.collection.balanceSheet.find(
+        {
+          // d: { $gt: getUnixTime(sub(new Date(), { days: 365 })) },
+          // a: { $gt: 0 },
+          o: "rkRfnfBu1tqDnpPrcmm7fH",
+        },{explain: true }
+      ).toArray(),
+      true
+    )
+    return;
+
+    log(`Agg Get all Org members balances`,
+      await azdbCore.collection.balanceSheet.aggregate([
+        {
+          $match: {
+            // d: { $gt: getUnixTime(sub(new Date(), { days: 365 })) },
+            a: { $gt: 0 },
+            o: "rkRfnfBu1tqDnpPrcmm7fH",
+          }
+        },
+        { $group: { _id: { user: "$u" }, balance: { $sum: "$a" } } } // Get user Total balance per Org
+      ]).explain(),
+      true
+    )
+    return;
+
+
 
     // await simulateBS_insert();
 
@@ -65,6 +125,7 @@ async function simulate_AddBalanceSheetForOrg(orgId: string, emailDomain: string
   const inputBys = ['personA', 'personB', 'personC', 'personD', 'personE'];
 
   let totalCounter = 0;
+  const bsListOfLists: { bsList: DB_C_BalanceSheet[], iterDt }[] = [];
   async function insertList(bsList: DB_C_BalanceSheet[], iterDt) {
     log(`Insert Up to day=${iterDt} inserting=${bsList.length}`);
     await azdbCore.insert_balanceSheet(bsList);
@@ -103,16 +164,24 @@ async function simulate_AddBalanceSheetForOrg(orgId: string, emailDomain: string
       if (bsList.length >= 1_000) {
         log(`Up to day=${iterDt} total=${totalCounter}`);
         const bsListRef = bsList;
-        await insertList(bsListRef, iterDt);
+        bsListOfLists.push({ bsList: bsListRef, iterDt: iterDt });
         bsList = [];
       }
     }
   }
   if (bsList.length > 0) {
     const bsListRef = bsList;
-    await insertList(bsListRef, 'last');
+    bsListOfLists.push({ bsList: bsListRef, iterDt: 'last' });
     bsList = [];
   }
+
+  const { results, errors } = await PromisePool
+    .withConcurrency(5)
+    .for(bsListOfLists)
+    .process(async (bsListData, index, pool) => {
+      await sleep(_.random(500, 10_000, false));
+      await insertList(bsListData.bsList, bsListData.iterDt);
+    });
 }
 
 async function simulate_AddOrgs() {
@@ -190,10 +259,10 @@ function nowSec() {
   return Math.round(Date.now() / 1000.0);
 }
 
-function log(text: string, data?: any) {
+function log(text: string, data?: any, stringify = false) {
   console.log(`${new Date().toLocaleString()}: ${text}`);
   if (data !== undefined) {
-    console.log(data);
+    stringify ? console.log(JSON.stringify(data, undefined, 2)) : console.log(data);
     console.log(`-----------------------`);
   }
 }
@@ -205,4 +274,8 @@ function randomEnum<T>(anEnum: T): T[keyof T] {
   const randomIndex = Math.floor(Math.random() * enumValues.length)
   const randomEnumValue = enumValues[randomIndex]
   return randomEnumValue;
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

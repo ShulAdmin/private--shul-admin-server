@@ -8,6 +8,7 @@
 
 # query cost notes
 - 1.14rc findBy org._id (first=11.83rc)
+- 29rc get a users balance per org,cat (first=40rc)
 
 
 
